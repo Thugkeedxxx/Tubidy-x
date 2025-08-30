@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LONATI-XVII Downloader</title>
+
+<!-- Hacker-style animated favicon -->
+<link rel="icon" href="data:image/svg+xml,
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
+  <text y='50%' x='50%' dominant-baseline='middle' text-anchor='middle' font-family='Share Tech Mono, monospace' font-size='50' fill='cyan'>
+    LX
+    <animate attributeName='fill' values='cyan;#00BFFF;cyan' dur='1.5s' repeatCount='indefinite'/>
+  </text>
+</svg>">
+
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+body, html {margin:0; padding:0; font-family:'Share Tech Mono', monospace; background:#0A0F2A; color:#fff; overflow-x:hidden;}
+a{color:inherit; text-decoration:none;}
+#miniLogo{position:fixed; top:15px; left:15px; font-family:'Share Tech Mono', monospace; color:#00FFFF; font-weight:700; font-size:1.5rem; z-index:999; text-shadow:0 0 8px #00BFFF; animation:pulse 1.5s infinite alternate;}
+@keyframes pulse {0% { text-shadow:0 0 5px #00BFFF; color:#00FFFF; } 50% { text-shadow:0 0 15px #00FFFF; color:#00BFFF; } 100% { text-shadow:0 0 5px #00BFFF; color:#00FFFF; }}
+#particles {position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; background: linear-gradient(120deg,#001A44,#0A0F2A); overflow:hidden;}
+.logo {text-align:center; font-size:3rem; font-weight:700; margin:20px 0; color:#00FFFF; text-shadow:0 0 10px #00BFFF,0 0 20px #00FFFF; animation:glow 1.8s infinite alternate;}
+@keyframes glow {0%{text-shadow:0 0 5px #00BFFF;}50%{text-shadow:0 0 15px #00FFFF;}100%{text-shadow:0 0 5px #00BFFF;}}
+.user-info{text-align:center;margin-bottom:20px;color:#A0CFFF;font-size:0.9rem;}
+.user-info a{color:#00FFFF; margin:0 5px;}
+.search-container {text-align:center; margin-bottom:25px; position:sticky; top:0; background:#0A0F2A; padding:15px 0; z-index:10; border-bottom:1px solid #001A44;}
+.search-container input{padding:12px; width:60%; border-radius:8px; border:none; font-size:1rem; outline:none; background:#001A44; color:#fff; transition:0.3s;}
+.search-container input:focus{box-shadow:0 0 8px #00BFFF;}
+.search-container button{padding:12px 18px; border:none; border-radius:8px; background:#00BFFF; color:#fff; font-weight:700; cursor:pointer; margin-left:8px; transition:0.3s;}
+.search-container button:hover{background:#00FFFF; transform:scale(1.05);}
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:22px; padding:0 20px 50px;}
+.video-card,.ad-card{background:#001A44; border-radius:12px; overflow:hidden; box-shadow:0 4px 14px rgba(0,191,255,0.6); transition:transform 0.4s,box-shadow 0.4s; display:flex; flex-direction:column; opacity:0; animation:fadeIn 0.6s forwards;}
+.video-card:hover{transform:scale(1.04); box-shadow:0 6px 25px rgba(0,255,255,0.6);}
+.video-card img{width:100%; height:150px; object-fit:cover; transition:transform 0.3s;}
+.video-card img:hover{transform:scale(1.05);}
+.video-info{padding:12px; flex:1; display:flex; flex-direction:column;}
+.video-info h3{margin:5px 0; font-size:1rem; line-height:1.3rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.channel-info{display:flex; align-items:center; font-size:0.85rem; color:#A0CFFF; margin-bottom:8px;}
+.channel-avatar{width:28px; height:28px; border-radius:50%; display:inline-block; margin-right:8px; flex-shrink:0; background:#00BFFF;}
+.download-btn{display:block; text-align:center; padding:10px; background:#00BFFF; border-radius:8px; font-weight:700; margin:6px 0; cursor:pointer; transition:0.3s;}
+.download-btn:hover{background:#00FFFF; transform:scale(1.05);}
+.ad-card{display:flex; flex-direction:column; align-items:center; justify-content:center; padding:22px; background:#002244; color:#fff; text-align:center; font-weight:700; font-size:0.9rem; border:1px dashed #00BFFF;}
+.ad-card span{color:#00FFFF;}
+#videoModal{display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); justify-content:center; align-items:center; z-index:1000; padding:20px; box-sizing:border-box; animation:fadeInModal 0.4s;}
+#videoModal div{position:relative; width:100%; max-width:900px;}
+#closeModal{position:absolute; top:-20px; right:-20px; font-size:2rem; color:#fff; cursor:pointer; z-index:10; transition:0.3s;}
+#closeModal:hover{transform:rotate(15deg);}
+#modalPlayer{width:100%; height:0; padding-bottom:56.25%; border:none; position:relative;}
+#modalPlayer iframe{position:absolute; width:100%; height:100%;}
+.spinner {border:5px solid #001A44; border-top:5px solid #00BFFF; border-radius:50%; width:50px; height:50px; animation:spin 1s linear infinite; margin:20px auto; display:none;}
+@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+@keyframes fadeIn{from{opacity:0; transform:translateY(20px);}to{opacity:1; transform:translateY(0);}}
+@keyframes fadeInModal{from{opacity:0;}to{opacity:1;}}
+</style>
+</head>
+<body>
+
+<div id="miniLogo">LX</div>
+<div id="particles"></div>
+<div class="logo">LONATI-XVII Downloader</div>
+
+<div class="user-info">
+Built by <strong>THUGKEED</strong> |
+<a href="https://github.com/thugkeedxxx" target="_blank">GitHub</a> |
+<a href="https://whatsapp.com/channel/0029VbB7a9v6LwHqDUERef0M" target="_blank">WhatsApp</a>
+</div>
+
+<div class="search-container">
+<input type="text" id="searchInput" placeholder="Search videos...">
+<button onclick="searchVideos()">Search</button>
+</div>
+
+<div class="grid" id="videoGrid"></div>
+<div class="spinner" id="spinner"></div>
+
+<div id="videoModal">
+<div>
+<span id="closeModal">&times;</span>
+<iframe id="modalPlayer" src="" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+</div>
+</div>
+
+<footer>Welcome to LONATI-XVII Downloader • Anime Blue Edition • Powered by THUGKEED Tech</footer>
+
+<script>
+const API_KEY="AIzaSyB_IIgAFZkw9DuS6XXHUN_M7yD2Or0sY3w";
+const videoGrid=document.getElementById("videoGrid");
+const videoModal=document.getElementById("videoModal");
+const modalPlayer=document.getElementById("modalPlayer");
+const closeModal=document.getElementById("closeModal");
+const spinner=document.getElementById("spinner");
+const searchInput=document.getElementById("searchInput");
+
+closeModal.onclick=()=>{modalPlayer.src='';videoModal.style.display='none';}
+videoModal.onclick=(e)=>{if(e.target===videoModal){modalPlayer.src='';videoModal.style.display='none';}}
+
+function openModal(videoId){
+  spinner.style.display='block';
+  videoModal.style.display='flex';
+  setTimeout(()=>{
+    modalPlayer.src=`https://www.youtube.com/embed/${videoId}?autoplay=1`;
+    spinner.style.display='none';
+  },500);
+}
+
+function downloadMP3(videoId,title){
+  spinner.style.display='block';
+  setTimeout(()=>{
+    alert(`MP3 for "${title}" ready to download! (Simulated)`);
+    spinner.style.display='none';
+  },1000);
+}
+
+async function searchVideos(){
+  const query=searchInput.value.trim();
+  if(!query) return;
+  spinner.style.display='block';
+  videoGrid.innerHTML='';
+
+  const res=await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=12&q=${encodeURIComponent(query)}&key=${API_KEY}`);
+  const data=await res.json();
+  const videos=data.items;
+
+  for(let i=0;i<videos.length;i++){
+    const video=videos[i];
+    const statsRes=await fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${video.id.videoId}&key=${API_KEY}`);
+    const statsData=await statsRes.json();
+    const stats=statsData.items[0].statistics;
+
+    const card=document.createElement('div');
+    card.className="video-card";
+    card.innerHTML=`
+      <img src="${video.snippet.thumbnails.medium.url}" alt="${video.snippet.title}">
+      <div class="video-info">
+        <h3>${video.snippet.title}</h3>
+        <div class="channel-info">
+          <span class="channel-avatar"></span>${video.snippet.channelTitle} • ${Number(stats.viewCount).toLocaleString()} views • ${stats.likeCount ? Number(stats.likeCount).toLocaleString()+' likes':''}
+        </div>
+        <a href="javascript:void(0);" onclick="openModal('${video.id.videoId}')" class="download-btn">Watch</a>
+        <a href="javascript:void(0);" onclick="downloadMP3('${video.id.videoId}','${video.snippet.title}')" class="download-btn">Download MP3</a>
+      </div>
+    `;
+    videoGrid.appendChild(card);
+
+    if((i+1)%4===0){
+      const adCard=document.createElement("div");
+      adCard.className="ad-card";
+      adCard.innerHTML=`💰 <span>Upgrade to THUGKEED Premium</span> 💰<br>Unlock advanced features!`;
+      videoGrid.appendChild(adCard);
+    }
+  }
+
+  spinner.style.display='none';
+}
+
+// No default fixed search: user can type any song
+</script>
+</body>
+</html>
