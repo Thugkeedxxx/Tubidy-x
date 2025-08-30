@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: tubidy-x
+    env: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: YT_API_KEY
+        fromEnv: YT_API_KEY
+      - key: PORT
+        fromEnv: PORT
+    autoDeploy: true
