@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TUBIDY-X</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(120deg, #00b4db, #0083b0);
+    color: white;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+  }
+  header {
+    padding: 20px;
+    font-size: 2rem;
+    font-weight: bold;
+    background: #0077b6;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  }
+  .search-box {
+    margin: 20px auto;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  input {
+    padding: 12px;
+    width: 60%;
+    max-width: 300px;
+    border-radius: 25px;
+    border: none;
+    font-size: 16px;
+  }
+  button {
+    padding: 12px 20px;
+    border-radius: 25px;
+    border: none;
+    background: #ff9800;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  button:hover {
+    background: #e68900;
+  }
+  .results, .section {
+    margin: 20px auto;
+    width: 90%;
+    max-width: 700px;
+    text-align: left;
+  }
+  .section h2 {
+    margin-bottom: 10px;
+  }
+  .song {
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: transform 0.3s;
+  }
+  .song:hover { transform: scale(1.02); }
+  .song-info { display: flex; align-items: center; gap: 10px; }
+  .song img { width: 80px; height: 60px; border-radius: 6px; }
+  .loading, .download-bar {
+    display: none;
+    font-size: 16px;
+    margin: 15px 0;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+  .spinner {
+    border: 4px solid rgba(255,255,255,0.2);
+    border-top: 4px solid #fff;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+  }
+  .progress-bar-container {
+    width: 100%;
+    background: rgba(255,255,255,0.2);
+    height: 12px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 5px;
+  }
+  .progress-bar { height: 100%; width: 0%; background: #00ffea; transition: width 0.2s ease; }
+  footer { margin-top: 40px; padding: 10px; background: #023e8a; font-size: 14px; }
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>🎶 TUBIDY-X 🎶</header>
+
+<div class="search-box">
+  <input type="text" id="searchBox" placeholder="Search for music...">
+  <button onclick="searchMusic()">Search</button>
+</div>
+
+<div class="loading" id="searchLoading">
+  Searching... <span class="spinner"></span>
+</div>
+
+<div class="section" id="trendingSection">
+  <h2>🔥 Trending Songs</h2>
+  <div class="results" id="trendingResults"></div>
+</div>
+
+<div class="section" id="topSection">
+  <h2>🏆 Top Charts</h2>
+  <div class="results" id="topResults"></div>
+</div>
+
+<div class="section" id="suggestionSection">
+  <h2>💡 Search Suggestions</h2>
+  <div class="results" id="suggestionResults"></div>
+</div>
+
+<div class="results" id="searchResults"></div>
+
+<footer>Powered by THUGKEED | Tubidy-X 2025</footer>
+
+<script>
+const searchResults = document.getElementById("searchResults");
+const searchLoading = document.getElementById("searchLoading");
+const trendingResults = document.getElementById("trendingResults");
+const topResults = document.getElementById("topResults");
+const suggestionResults = document.getElementById("suggestionResults");
+
+async function searchMusic() {
+  const query = document.getElementById("searchBox").value.trim();
+  if(!query) return alert("Enter a song name!");
+  searchResults.innerHTML = "";
+  searchLoading.style.display = "flex";
+
+  try {
+    const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    searchLoading.style.display = "none";
+    if(!data || data.length === 0){ searchResults.innerHTML="<p>No results found</p>"; return; }
+
+    data.forEach(song => {
+      const div = document.createElement("div");
+      div.className = "song";
+      div.innerHTML = `
+        <div class="song-info">
+          <img src="${song.thumbnail}" alt="${song.title}">
+          <div>${song.title}</div>
+        </div>
+        <div><button onclick="downloadSong('${song.videoId}', this)">⬇️ Download</button></div>
+      `;
+      searchResults.appendChild(div);
+    });
+  } catch(e){ console.error(e); searchLoading.style.display="none"; }
+}
+
+// Load Trending & Top Charts
+async function loadSection(query, container) {
+  try {
+    const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    container.innerHTML="";
+    data.forEach(song=>{
+      const div=document.createElement("div");
+      div.className="song";
+      div.innerHTML=`
+        <div class="song-info">
+          <img src="${song.thumbnail}" alt="${song.title}">
+          <div>${song.title}</div>
+        </div>
+        <div><button onclick="downloadSong('${song.videoId}', this)">⬇️ Download</button></div>
+      `;
+      container.appendChild(div);
+    });
+  } catch(e){ console.error(e); }
+}
+
+function downloadSong(videoId, btn){
+  const container = document.createElement("div");
+  container.className="progress-bar-container";
+  const bar=document.createElement("div"); bar.className="progress-bar";
+  container.appendChild(bar); btn.parentNode.appendChild(container);
+
+  let percent=0;
+  const interval=setInterval(()=>{ percent+=Math.random()*10; if(percent>=95) percent=95; bar.style.width=percent+"%"; }, 300);
+
+  const link=document.createElement("a");
+  link.href=`/download?videoId=${videoId}`;
+  link.click();
+
+  setTimeout(()=>{ clearInterval(interval); bar.style.width="100%"; setTimeout(()=>container.remove(),1000); },5000);
+}
+
+// Suggestions live
+document.getElementById("searchBox").addEventListener("input", async (e)=>{
+  const query=e.target.value.trim();
+  suggestionResults.innerHTML="";
+  if(!query) return;
+
+  try{
+    const res=await fetch(`/search?q=${encodeURIComponent(query)}`);
+    const data=await res.json();
+    data.slice(0,3).forEach(song=>{
+      const div=document.createElement("div");
+      div.className="song";
+      div.innerHTML=`
+        <div class="song-info">
+          <img src="${song.thumbnail}" alt="${song.title}">
+          <div>${song.title}</div>
+        </div>
+        <div><button onclick="downloadSong('${song.videoId}', this)">⬇️ Download</button></div>
+      `;
+      suggestionResults.appendChild(div);
+    });
+  } catch(e){ console.error(e); }
+});
+
+// Initialize trending and top charts
+loadSection("top hits", trendingResults);
+loadSection("best songs 2025", topResults);
+</script>
+
+</body>
+</html>
